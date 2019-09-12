@@ -10,6 +10,8 @@ import entity.BCrypt;
 import entity.JwtUtil;
 import entity.Result;
 import entity.StatusCode;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -203,5 +205,11 @@ public class UserController {
         return new Result(true,StatusCode.OK,"添加积分成功");
     }
 
+
+    @PostMapping(value = "/gerenxinxi/update")
+    public Result update(@RequestBody User user){
+        userService.geRenXinXiUpdate(user);
+       return new Result(true,StatusCode.OK,"更新个人信息成功");
+    }
 
 }

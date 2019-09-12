@@ -1,6 +1,5 @@
 package com.changgou.user.service;
 
-import com.changgou.user.pojo.Address;
 import com.changgou.user.pojo.User;
 import com.github.pagehelper.PageInfo;
 
@@ -78,6 +77,5 @@ public interface UserService {
     public int addPoints(Integer points ,String username);
 
 
-
-
+    void geRenXinXiUpdate(User user);
 }
