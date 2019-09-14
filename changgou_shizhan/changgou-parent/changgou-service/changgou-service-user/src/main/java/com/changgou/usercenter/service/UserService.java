@@ -1,6 +1,6 @@
 package com.changgou.usercenter.service;
 
-import com.changgou.user.pojo.User;
+
 import com.changgou.usercenter.pojo.User;
 import com.github.pagehelper.PageInfo;
 
@@ -79,4 +79,6 @@ public interface UserService {
 
 
     void geRenXinXiUpdate(User user);
+
+    User userInfo(String username);
 }
