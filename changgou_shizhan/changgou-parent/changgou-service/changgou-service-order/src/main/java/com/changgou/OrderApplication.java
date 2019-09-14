@@ -27,7 +27,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 @SpringBootApplication
 @EnableEurekaClient
 @MapperScan(basePackages = "com.changgou.order.dao")
-@EnableFeignClients(basePackages = {"com.changgou.goods.feign", "com.changgou.usercenter.feign"})
+@EnableFeignClients(basePackages = {"com.changgou.goods.feign", "com.changgou.user.feign"})
 @EnableScheduling//开启定时任务
 public class OrderApplication {
 

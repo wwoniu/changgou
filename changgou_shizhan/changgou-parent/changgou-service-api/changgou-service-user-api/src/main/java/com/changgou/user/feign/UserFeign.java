@@ -22,7 +22,6 @@ public interface UserFeign {
     @GetMapping("/load/{id}")
     public Result<User> findByUsername(@PathVariable(name="id") String id);
 
-
     /**
      * 添加积分
      * @param points
