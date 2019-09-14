@@ -78,4 +78,12 @@ public interface SkuService {
      * @return
      */
     int derCount(OrderItem orderItem);
+
+
+    /**
+     * 取消订单,增加库存
+     * @param orderItem
+     * @return
+     */
+    public int addCount(OrderItem orderItem);
 }

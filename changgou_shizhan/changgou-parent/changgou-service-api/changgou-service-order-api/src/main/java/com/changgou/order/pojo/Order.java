@@ -5,6 +5,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /****
  * @Author:admin
@@ -96,7 +97,15 @@ public class Order implements Serializable{
     @Column(name = "is_delete")
 	private String isDelete;//是否删除
 
+	private List<OrderItem> orderItems; //订单详情
 
+	public List<OrderItem> getOrderItems() {
+		return orderItems;
+	}
+
+	public void setOrderItems(List<OrderItem> orderItems) {
+		this.orderItems = orderItems;
+	}
 
 	//get方法
 	public String getId() {

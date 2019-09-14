@@ -2,8 +2,10 @@ package com.changgou.order.service;
 
 import com.changgou.order.pojo.Order;
 import com.github.pagehelper.PageInfo;
+import entity.Result;
 
 import java.util.List;
+import java.util.Map;
 
 /****
  * @Author:admin
@@ -73,4 +75,25 @@ public interface OrderService {
      * @param transaction_id
      */
     public void updateStatus(String out_trade_no,String transaction_id);
+
+
+    /**
+     * 查询我的订单信息
+     * @param username
+     * @return
+     */
+    List<Order> myOrder(String username);
+
+    /**
+     * 查询待付款列表
+     * @param username
+     * @return
+     */
+    List<Order> notpay(String username);
+
+    void offOrder(String orderId);
+
+    List<Order> deliveryTheGoods(String username);
+
+    int confirm(String orderId);
 }

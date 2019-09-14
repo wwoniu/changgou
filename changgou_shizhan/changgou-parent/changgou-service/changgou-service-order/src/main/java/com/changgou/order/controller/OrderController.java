@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /****
  * @Author:admin
@@ -132,6 +133,57 @@ public class OrderController {
     }
 
 
+    /**
+     * 查询我的订单信息
+     * @param username
+     * @return
+     */
+    @GetMapping("/myOrder")
+    public Result<List<Order>> myOrder(@RequestParam String username){
+        List<Order> orders= orderService.myOrder(username);
+        return new Result<List<Order>>(true,StatusCode.OK,"查询我的订单成功",orders);
+    }
+
+    /**
+     * 查询待付款列表
+     * @param username
+     * @return
+     */
+    @GetMapping("/notpay")
+    public Result<List<Order>> notpay(@RequestParam String username){
+        List<Order> orders= orderService.notpay(username);
+        return new Result<List<Order>>(true,StatusCode.OK,"查询待付款列表成功",orders);
+    }
+
+    /**
+     * 取消订单
+     * @param orderId
+     */
+    @RequestMapping("/offOrder")
+    public Result offOrder(@RequestParam String orderId){
+        orderService.offOrder(orderId);
+        return new Result(true, StatusCode.OK,"取消订单成功");
+    }
+
+    /**
+     * 我的订单待发货,待收货订单列表
+     * @param username
+     * @return
+     */
+    @GetMapping("/deliveryTheGoods")
+    public Result<List<Order>> deliveryTheGoods(@RequestParam String username){
+        List<Order> orders= orderService.deliveryTheGoods(username);
+        return new Result<List<Order>>(true,StatusCode.OK,"查询待发货,待收货订单列表成功",orders);
+    }
 
 
+    /**
+     * 确认收货
+     * @return
+     */
+    @RequestMapping("/confirm")
+    public Result confirm(@RequestParam String orderId){
+        int i = orderService.confirm(orderId);
+        return new Result(true, StatusCode.OK,"确认收货成功",i);
+    }
 }
