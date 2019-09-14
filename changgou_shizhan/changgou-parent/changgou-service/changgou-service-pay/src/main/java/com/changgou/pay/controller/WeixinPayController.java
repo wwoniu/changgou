@@ -1,11 +1,17 @@
 package com.changgou.pay.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.changgou.order.feign.RecordFeign;
+import com.changgou.order.pojo.Record;
 import com.changgou.pay.service.WeixinPayService;
 
 import com.github.wxpay.sdk.WXPayUtil;
+import entity.IdWorker;
 import entity.Result;
 import entity.StatusCode;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -71,6 +77,12 @@ public class WeixinPayController {
     @Autowired
     private Environment env;
 
+    @Autowired
+    private RecordFeign recordFeign;
+
+    @Autowired
+    private IdWorker idWorker;
+
     /**
      * 接收 微信支付通知的结果  结果(以流的形式传递过来)
      */
@@ -121,6 +133,31 @@ public class WeixinPayController {
             //发送消息
             //rabbitTemplate.convertAndSend(env.getProperty("mq.pay.exchange.order"),env.getProperty("mq.pay.routing.key"),data);
             rabbitTemplate.convertAndSend(attachMap.get("exchange"),attachMap.get("routingkey"),data);
+
+            //添加提醒发货记录
+            Record record = new Record();
+            record.setId(idWorker.nextId()+"");
+            record.setUsername(attachMap.get("username"));
+            record.setOrderId(map.get("out_trade_no"));
+            //record.setUsername("zhangsan");
+            //record.setOrderId("1172081025413677056");
+            record.setIsOvertime("0");
+            record.setIsRemind("0");
+            record.setIsDelivery("0");
+            recordFeign.add(record);
+
+            String recordString = JSON.toJSONString(record);
+            //发送死信消息
+            rabbitTemplate.convertAndSend("delay.queue", (Object) recordString, new MessagePostProcessor() {
+                @Override
+                public Message postProcessMessage(Message message) throws AmqpException {
+                    message.getMessageProperties().setExpiration("5000");// 60000*60*24,24小时
+                    System.out.println("消息已发送");
+                    return message;
+                }
+            });
+
+
 
             //5.返回微信的接收请况(XML的字符串)
 

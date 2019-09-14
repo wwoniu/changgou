@@ -139,5 +139,9 @@ public class SkuController {
         return new Result(true,StatusCode.OK,"减少库存成功");
     }
 
-
+    @RequestMapping(value = "/add/count")
+    public Result addCount(@RequestBody OrderItem orderItem){
+        skuService.addCount(orderItem);
+        return new Result(true,StatusCode.OK,"增加库存成功");
+    }
 }

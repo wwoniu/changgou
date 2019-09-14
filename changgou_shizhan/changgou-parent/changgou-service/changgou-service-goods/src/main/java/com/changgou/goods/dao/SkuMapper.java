@@ -11,6 +11,9 @@ import tk.mybatis.mapper.common.Mapper;
  *****/
 public interface SkuMapper extends Mapper<Sku> {
 
-    @Update(value="update tb_sku set num=num-#{num},sale_num=sale_num+#{num} where id =#{skuId} and num >=#{num}")
+    @Update(value="update tb_sku set num=num-#{num},sale_num=sale_num+#{num} where id=#{skuId} and num>=#{num}")
     public int decrCount(OrderItem orderItem);
+
+    @Update(value="update tb_sku set num=num+#{num},sale_num=sale_num-#{num} where id=#{skuId}")
+    public int addCount(OrderItem orderItem);
 }

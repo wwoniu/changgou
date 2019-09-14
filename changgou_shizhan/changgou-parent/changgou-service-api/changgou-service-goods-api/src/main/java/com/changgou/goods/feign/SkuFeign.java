@@ -46,6 +46,13 @@ public interface SkuFeign {
     @PostMapping(value = "/decr/count")
     public Result decrCount(@RequestBody OrderItem orderItem);
 
+    /**
+     * 增加库存
+     * @param orderItem
+     * @return
+     */
+    @RequestMapping(value = "/add/count")
+    public Result addCount(@RequestBody OrderItem orderItem);
 
 
 }

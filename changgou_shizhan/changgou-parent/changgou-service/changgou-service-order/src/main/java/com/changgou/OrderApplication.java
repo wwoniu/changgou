@@ -1,6 +1,7 @@
 package com.changgou;
 
 import entity.IdWorker;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
@@ -11,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.core.env.Environment;
 import tk.mybatis.spring.annotation.MapperScan;
 
@@ -26,6 +28,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 @EnableEurekaClient
 @MapperScan(basePackages = "com.changgou.order.dao")
 @EnableFeignClients(basePackages = {"com.changgou.goods.feign", "com.changgou.usercenter.feign"})
+@EnableScheduling//开启定时任务
 public class OrderApplication {
 
     public static void main(String[] args) {
@@ -36,26 +39,37 @@ public class OrderApplication {
     public IdWorker idWorker(){
         return new IdWorker(0,1);
     }
-    @Autowired
-    private Environment env;
 
-    //创建队列
+
+    //创建死信队列
     @Bean
-    public Queue createQueue(){
-        return new Queue(env.getProperty("mq.pay.queue.order"));
+    public Queue createQueue1(){
+        return QueueBuilder.durable("delay.queue")
+                .withArgument("x-dead-letter-exchange","dlx.exchange")
+                .withArgument("x-dead-letter-routing-key","queue.message")
+                .build();
+    }
+
+
+    //创建正常的队列
+    @Bean
+    public Queue createQueue2(){
+        return new Queue("queue.message");
     }
 
     //创建交换机
-
     @Bean
-    public DirectExchange basicExchanage(){
-        return new DirectExchange(env.getProperty("mq.pay.exchange.order"));
+    public DirectExchange dlxExchanage(){
+        return new DirectExchange("dlx.exchange");
     }
 
-    //绑定
+    //创建binding
 
-    @Bean
-    public Binding basicBinding(){
-        return  BindingBuilder.bind(createQueue()).to(basicExchanage()).with(env.getProperty("mq.pay.routing.key"));
+    @Bean(name="SeckillBinding")
+    public Binding dlxBinding(){
+        return  BindingBuilder
+                .bind(createQueue2())
+                .to(dlxExchanage())
+                .with("queue.message");
     }
 }

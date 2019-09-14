@@ -220,4 +220,18 @@ public class SkuServiceImpl implements SkuService {
         }
         return i;
     }
+
+
+    /**
+     * 取消订单,添加库存
+     * @param orderItem
+     * @return
+     */
+    public int addCount(OrderItem orderItem){
+        int i = skuMapper.addCount(orderItem);
+        if (i<=0) {
+            throw new RuntimeException("添加库存失败");
+        }
+        return i;
+    }
 }

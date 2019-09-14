@@ -1,14 +1,13 @@
 package com.changgou;
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Queue;
+import entity.IdWorker;
+import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 
@@ -22,11 +21,16 @@ import org.springframework.core.env.Environment;
  */
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 @EnableEurekaClient
+@EnableFeignClients(basePackages = "com.changgou.order.feign")
 public class WeixinPayApplication {
     public static void main(String[] args) {
         SpringApplication.run(WeixinPayApplication.class,args);
     }
 
+    @Bean
+    public IdWorker IdWorker(){
+        return new IdWorker();
+    }
 
     @Autowired
     private Environment env;
@@ -72,4 +76,5 @@ public class WeixinPayApplication {
     public Binding basicSeckillBinding(){
         return  BindingBuilder.bind(createSeckillQueue()).to(basicSeckillExchanage()).with(env.getProperty("mq.pay.routing.seckillkey"));
     }
+
 }

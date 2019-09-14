@@ -10,14 +10,20 @@ import com.changgou.usercenter.feign.UserFeign;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import entity.IdWorker;
+import entity.Result;
+import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /****
  * @Author:admin
@@ -330,4 +336,132 @@ public class OrderServiceImpl implements OrderService {
         //3.更新到数据库
         orderMapper.updateByPrimaryKeySelective(order);
     }
+
+
+    /**
+     *
+     *查询我的订单信息
+     * @param username
+     * @return
+     */
+    @Override
+    public List<Order> myOrder(String username) {
+        Order order = new Order();
+        order.setUsername(username);
+        List<Order> orders = orderMapper.select(order);
+        OrderItem orderItem = new OrderItem();
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (Order ord : orders) {
+            orderItem.setOrderId(ord.getId());
+            orderItems = orderItemMapper.select(orderItem);
+            ord.setOrderItems(orderItems);
+        }
+
+        return orders;
+    }
+
+    /**
+     * 查询待付款列表
+     * @param username
+     * @return
+     */
+    @Override
+    public List<Order> notpay(String username) {
+        Order order = new Order();
+        order.setUsername(username);
+        order.setPayStatus("0");
+        List<Order> orders = orderMapper.select(order);
+        OrderItem orderItem = new OrderItem();
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (Order ord : orders) {
+            orderItem.setOrderId(ord.getId());
+            orderItems = orderItemMapper.select(orderItem);
+            ord.setOrderItems(orderItems);
+        }
+
+        return orders;
+    }
+
+
+    /**
+     * 取消订单
+     * @param orderId
+     */
+    @Override
+    public void offOrder(String orderId) {
+        Order order = orderMapper.selectByPrimaryKey(orderId);
+        //OrderStatus不能为3,已取消, PayStatus不能为2,支付失败
+        if (!order.getPayStatus().equals("2")&&!order.getOrderStatus().equals("3")) {
+            //1.修改订单状态
+            int i = orderMapper.offOrder(orderId);//将订单状态设置为3表示已取消
+
+            if (i>=1){
+                //2.库存回滚
+                OrderItem orderItem = new OrderItem();
+                orderItem.setOrderId(orderId);
+
+                List<OrderItem> orderItems = orderItemMapper.select(orderItem);
+                if (orderItems!=null) {
+                    for (OrderItem item : orderItems) {
+                        //调用sku商品微服务的方法,增加sku商品库存
+                        skuFeign.addCount(item);
+                    }
+
+                }else {
+                    throw new RuntimeException("取消订单失败");
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 我的订单待发货,待收货订单列表
+     * @param username
+     * @return
+     */
+    @Override
+    public List<Order> deliveryTheGoods(String username) {
+        //查询这个用户待发货,代收货订单
+        Example example = new Example(Order.class);
+        Example.Criteria criteria = example.createCriteria();
+        List<String> numb = new ArrayList<>();
+        numb.add("0");
+        numb.add("1");
+        criteria.andEqualTo("payStatus","1");
+        criteria.andIn("consignStatus", numb);
+
+        List<Order> orders = orderMapper.selectByExample(example);
+        //List<Order> orders = orderMapper.deliveryTheGoods(username);
+        OrderItem orderItem = new OrderItem();
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        //封装orderItem信息
+        for (Order ord : orders) {
+            orderItem.setOrderId(ord.getId());
+            orderItems = orderItemMapper.select(orderItem);
+            ord.setOrderItems(orderItems);
+        }
+
+        return orders;
+    }
+
+    /**
+     * 确认收货
+     * @param orderId
+     * @return
+     */
+    @Override
+    public int confirm(String orderId) {
+        Order order = orderMapper.selectByPrimaryKey(orderId);
+        order.setOrderStatus("1");
+        order.setConsignStatus("2");
+        int i = orderMapper.updateByPrimaryKeySelective(order);
+        if (i<=0){
+            throw new RuntimeException("确认收货失败");
+        }
+        return i;
+    }
+
+
 }
