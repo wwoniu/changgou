@@ -1,6 +1,7 @@
 package com.changgou.usercenter.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.changgou.usercenter.config.TokenDecode;
 import com.changgou.usercenter.pojo.User;
 import com.changgou.usercenter.service.UserService;
 import com.github.pagehelper.PageInfo;
@@ -122,6 +123,7 @@ public class UserController {
      */
     @GetMapping("/{id}")
     public Result<User> findById(@PathVariable String id) {
+
         //调用UserService实现根据主键查询User
         User user = userService.findById(id);
         return new Result<User>(true, StatusCode.OK, "查询成功", user);
@@ -208,6 +210,15 @@ public class UserController {
     public Result update(@RequestBody User user){
         userService.geRenXinXiUpdate(user);
        return new Result(true,StatusCode.OK,"更新个人信息成功");
+    }
+
+    @Autowired
+    private TokenDecode tokenDecode;
+    @GetMapping("/user/info")
+    public Result<User> userInfo(){
+        String username = tokenDecode.getUserInfo().get("username");
+       User user = userService.userInfo(username);
+       return new Result<>(true,StatusCode.OK,"查询用户信息成功",user);
     }
 
 }

@@ -1,21 +1,18 @@
 package com.changgou.usercenter.service.impl;
 
-import com.changgou.user.config.TokenDecode;
-import com.changgou.user.dao.UserMapper;
-import com.changgou.user.pojo.User;
-import com.changgou.user.service.UserService;
+
+import com.changgou.usercenter.config.TokenDecode;
 import com.changgou.usercenter.dao.UserMapper;
 import com.changgou.usercenter.pojo.User;
 import com.changgou.usercenter.service.UserService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import entity.DateUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 /****
@@ -240,6 +237,11 @@ public class UserServiceImpl implements UserService {
             userMapper.updateByPrimaryKeySelective(userKey);
         }
 
+    }
+
+    @Override
+    public User userInfo(String username) {
+        return userMapper.selectByPrimaryKey(username);
     }
 
 
