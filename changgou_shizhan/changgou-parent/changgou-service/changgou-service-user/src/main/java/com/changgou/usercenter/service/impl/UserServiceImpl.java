@@ -1,15 +1,21 @@
 package com.changgou.usercenter.service.impl;
 
+import com.changgou.user.config.TokenDecode;
+import com.changgou.user.dao.UserMapper;
+import com.changgou.user.pojo.User;
+import com.changgou.user.service.UserService;
 import com.changgou.usercenter.dao.UserMapper;
 import com.changgou.usercenter.pojo.User;
 import com.changgou.usercenter.service.UserService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import entity.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 /****
@@ -20,7 +26,7 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
+    @Autowired(required = false)
     private UserMapper userMapper;
 
 
@@ -211,6 +217,29 @@ public class UserServiceImpl implements UserService {
     @Override
     public int addPoints(Integer points, String username) {
         return userMapper.addPoints(points, username);
+    }
+
+    @Autowired
+    private TokenDecode tokenDecode;
+    @Override
+    public void geRenXinXiUpdate(User user) {
+        //获取当前登录的用户名
+        //String username = user.getUsername();
+        String username = tokenDecode.getUserInfo().get("username");
+        //根据当前的用户获取查询用户信息
+        User userKey = userMapper.selectByPrimaryKey(username);
+        //判断前端传来的昵称是否重复
+        if (userKey.getNickName()==user.getNickName()) {
+            throw new RuntimeException("用户昵称重复");
+        }else{
+            userKey.setName(user.getName());
+            userKey.setBirthday(user.getBirthday());
+            userKey.setNickName(user.getNickName());
+            userKey.setQq(user.getQq());
+            userKey.setSex(user.getSex());
+            userMapper.updateByPrimaryKeySelective(userKey);
+        }
+
     }
 
 
